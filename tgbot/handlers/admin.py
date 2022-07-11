@@ -1,25 +1,24 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import filters
 from aiogram.dispatcher.storage import FSMContext
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 
 from tgbot.models.role import UserRole
-#from tgbot.services.repository import Repo
 
-from tgbot.states.admin import AdminStates, AddExersice, DeleteExersice, ChangeExersice
-from tgbot.keyboards.keyboards.admin_menu_keyboard import admin_actions
+from tgbot.states.admin import AdminStates, AddExersice
+from tgbot.keyboards.inline_keyboards.admin_menu_inline_keyboard import admin_actions
 
 
 async def admin_start(message: Message) -> None:
     """Start function for admin."""
-    await message.reply("Привет, Admin, вы вошли в режим администрирования.", reply_markup=admin_actions)
+    await message.answer(text="Привет, Admin, вы вошли в режим администрирования.", reply_markup=admin_actions)
     await AdminStates.admin_menu.set()
 
 
 #<--- Add Exersice --->
-async def admin_add_exercise_name(message: Message, state: FSMContext) -> None:
+async def admin_add_exercise_name(call: CallbackQuery) -> None:
     """Add exersice into DataBase."""
-    await message.answer("Введите название упражнения.")
+    await call.message.answer("Введите название упражнения.")
     await AddExersice.input_exercise_name.set()
 
 
@@ -39,6 +38,7 @@ async def admin_add_exercise_output_result(message: Message, state: FSMContext) 
     await state.finish()
 
 
+
 async def admin_delete_exercise(message: Message) -> None:
     """Delete exersice from DataBase."""
     pass
@@ -53,7 +53,7 @@ def register_admin(dp: Dispatcher):
     dp.register_message_handler(admin_start, commands=["admin"], state="*", role=UserRole.ADMIN)
 
     # Add exersice.
-    dp.register_message_handler(admin_add_exercise_name, filters.Text(equals="add exercise", ignore_case=True), state=AdminStates.admin_menu, role=UserRole.ADMIN)
+    dp.register_callback_query_handler(admin_add_exercise_name, text=["add_exercise"], state=AdminStates.admin_menu, role=UserRole.ADMIN)
     dp.register_message_handler(admin_add_exercise_description, state=AddExersice.input_exercise_name, role=UserRole.ADMIN)
     dp.register_message_handler(admin_add_exercise_output_result, state=AddExersice.input_exercise_description, role=UserRole.ADMIN)
 
