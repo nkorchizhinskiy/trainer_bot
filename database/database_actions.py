@@ -1,4 +1,3 @@
-from typing import Literal
 import psycopg2
 
 
@@ -8,6 +7,7 @@ connection = psycopg2.connect(
         password="ltvbl2002",
         host="127.0.0.1",
         port="5433")
+
 
 def add_user(connection, user_id: int, user_name: str) -> None | bool:
     """Add user info into database. If user in database - return True"""
@@ -25,8 +25,7 @@ def add_user(connection, user_id: int, user_name: str) -> None | bool:
         return True
 
 
-
-def check_user(cursor, user_id: int) -> bool:
+def check_user(cursor, user_id: int) -> None | bool:
     """Check info about user in database"""
     cursor.execute(
             '''
@@ -38,5 +37,17 @@ def check_user(cursor, user_id: int) -> bool:
 
     if user_id in users_list:
         return True
-    else: 
-        return False
+
+
+def add_exercise_in_list(connection, exercise_name: str, exercise_description: str) -> None:
+    """Add exercise into database list"""
+    cursor = connection.cursor()
+    cursor.execute(
+                f'''
+                INSERT INTO exercises (exercise_name, exercise_description)
+                VALUES ('{exercise_name}', '{exercise_description}')
+                '''
+            )
+    connection.commit()  
+
+
