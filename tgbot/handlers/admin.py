@@ -8,11 +8,18 @@ from tgbot.models.role import UserRole
 from tgbot.states.admin import AdminStates, AddExersice
 from tgbot.keyboards.inline_keyboards.admin_menu_inline_keyboard import admin_actions
 
+from database.database_actions import connection, add_exercise_in_list
+
 
 async def admin_start(message: Message) -> None:
     """Start function for admin."""
     await message.answer(text="Привет, Admin, вы вошли в режим администрирования.", reply_markup=admin_actions)
     await AdminStates.admin_menu.set()
+
+#<--- Print Exercises List --->
+async def admin_print_exercises_list(call: CallbackQuery) -> None:
+    """Print list with exercises into message."""   
+    pass
 
 
 #<--- Add Exersice --->
@@ -33,12 +40,13 @@ async def admin_add_exercise_output_result(message: Message, state: FSMContext) 
     """Add exersice into DataBase."""
     await state.update_data(exercise_description=message.text)
     user_data = await state.get_data()
+    add_exercise_in_list(connection, exercise_name=user_data['exercise_name'], exercise_description=user_data['exercise_description'])
     await message.answer(f"Название упражнения - {user_data['exercise_name']}\n"
                          f"Описание упражнения - {user_data['exercise_description']}\n")
     await state.finish()
 
 
-
+#<--- Delete Exercise --->
 async def admin_delete_exercise(message: Message) -> None:
     """Delete exersice from DataBase."""
     pass
