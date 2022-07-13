@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from database.database_actions import connection
 
 from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -54,9 +55,11 @@ async def main():
     try:
         await dp.start_polling()
     finally:
+        connection.close()
         await dp.storage.close()
         await dp.storage.wait_closed()
         await bot.session.close()
+
 
 
 if __name__ == '__main__':
