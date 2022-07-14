@@ -51,3 +51,16 @@ def add_exercise_in_list(connection, exercise_name: str, exercise_description: s
     connection.commit()  
 
 
+def delete_exercise_from_list(connection, exercise_name: str):
+    """Delete exercise info in database list"""
+    cursor = connection.cursor()
+    cursor.execute(
+                f'''
+                DELETE FROM exercises
+                WHERE exercise_name = '{exercise_name}'
+                '''
+            )
+    connection.commit()  
+    
+
+
