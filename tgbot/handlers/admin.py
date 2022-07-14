@@ -5,10 +5,10 @@ from aiogram.types import CallbackQuery, Message
 
 from tgbot.models.role import UserRole
 
-from tgbot.states.admin import AdminStates, AddExersice
+from tgbot.states.admin import AdminStates, AddExersice, DeleteExersice
 from tgbot.keyboards.inline_keyboards.admin_menu_inline_keyboard import admin_actions
 
-from database.database_actions import connection, add_exercise_in_list
+from database.database_actions import connection, add_exercise_in_list, delete_exercise_from_list
 
 
 async def admin_start(message: Message) -> None:
@@ -47,11 +47,20 @@ async def admin_add_exercise_output_result(message: Message, state: FSMContext) 
 
 
 #<--- Delete Exercise --->
-async def admin_delete_exercise(message: Message) -> None:
+async def admin_delete_exercise(call: CallbackQuery) -> None:
     """Delete exersice from DataBase."""
-    pass
+    await call.message.answer("Введите /delete Название упражнения.")
+    await DeleteExersice.input_exersice_name.set()
     
 
+async def admin_delete_exercise_name(message: Message, state: FSMContext) -> None:
+    """Delete exercise from DataBase"""
+    exercise_name = message.get_args()
+    if exercise_name:
+        delete_exercise_from_list(connection=connection, exercise_name=exercise_name.strip().capitalize())
+    await state.finish()
+
+#<--- Change Exercise --->
 async def admin_change_exercise(message: Message) -> None:
     """Change exersice in DataBase."""
     pass
@@ -61,9 +70,18 @@ def register_admin(dp: Dispatcher):
     dp.register_message_handler(admin_start, commands=["admin"], state="*", role=UserRole.ADMIN)
 
     # Add exersice.
-    dp.register_callback_query_handler(admin_add_exercise_name, text=["add_exercise"], state=AdminStates.admin_menu, role=UserRole.ADMIN)
+    dp.register_callback_query_handler(admin_add_exercise_name, text="add_exercise", state=AdminStates.admin_menu, role=UserRole.ADMIN)
     dp.register_message_handler(admin_add_exercise_description, state=AddExersice.input_exercise_name, role=UserRole.ADMIN)
     dp.register_message_handler(admin_add_exercise_output_result, state=AddExersice.input_exercise_description, role=UserRole.ADMIN)
+
+    # Delete exercise.
+    dp.register_callback_query_handler(admin_delete_exercise, text="delete_exercise", state=AdminStates.admin_menu, role=UserRole.ADMIN)
+    dp.register_message_handler(admin_delete_exercise_name, commands=["delete"], state=DeleteExersice.input_exersice_name, role=UserRole.ADMIN)
+
+
+
+
+
 
     # # or you can pass multiple roles:
     # dp.register_message_handler(admin_start, commands=["start"], state="*", role=[UserRole.ADMIN])
